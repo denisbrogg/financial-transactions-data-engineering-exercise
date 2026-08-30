@@ -6,13 +6,17 @@ dependencies = [
     "dagster==1.13.20",
     "dagster-dg-cli>=1.13.20",
     "dagster-duckdb>=0.29.20",
+    "fastparquet>=2026.5.0",
     "pandas>=3.0.5",
+    "pyarrow>=25.0.1",
+    "pydantic>=2.13.5",
 ]
 
 [dependency-groups]
 dev = [
     "dagster-dg-cli",
     "dagster-webserver",
+    "pytest>=8.4.0",
 ]
 
 [build-system]
