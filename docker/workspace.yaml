@@ -1,0 +1,5 @@
+load_from:
+  - grpc_server:
+      host: financial_transactions_etl_pipelines_code
+      port: 4000
+      location_name: financial_transactions_etl_pipelines_code

@@ -1,0 +1,21 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ruff-check-fix
+        name: Lint
+        entry: uv run ruff check --fix --exit-non-zero-on-fix .
+        language: system
+        pass_filenames: false
+
+      - id: ruff-format
+        name: Format
+        entry: uv run ruff format .
+        language: system
+        pass_filenames: false
+
+      - id: nbstripout
+        name: Clean Jupyter Notebooks
+        entry: uv run nbstripout --extra-keys "metadata.kernelspec metadata.language_info"
+        language: system
+        types: [jupyter]
+        files: \.(ipynb)$

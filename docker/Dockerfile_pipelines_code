@@ -1,0 +1,24 @@
+FROM ghcr.io/astral-sh/uv:python3.13-trixie-slim
+
+# Add code location code
+ENV DAGSTER_HOME=/opt/dagster/dagster_home
+
+RUN mkdir -p $DAGSTER_HOME
+
+COPY docker/dagster.yaml $DAGSTER_HOME/dagster.yaml
+
+WORKDIR /opt/dagster/app
+COPY pipelines /opt/dagster/app
+
+RUN uv sync --all-groups
+RUN uv add dagster \
+    dagster-postgres \
+    dagster-docker
+
+# Run dagster code server on port 4000
+EXPOSE 4000
+
+HEALTHCHECK --timeout=1s --start-period=3s --interval=3s --retries=20 CMD ["uv", "run", "dagster", "api", "grpc-health-check", "-p", "4000"]
+
+# CMD allows this to be overridden from run launchers or executors to execute runs and steps
+CMD ["uv", "run", "dagster", "code-server", "start", "-h", "0.0.0.0", "-p", "4000", "-f", "src/pipelines/definitions.py"]

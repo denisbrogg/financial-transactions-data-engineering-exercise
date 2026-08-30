@@ -1,0 +1,14 @@
+storage:
+  postgres:
+    postgres_db:
+      username: postgres_user
+      password: postgres_password
+      hostname: financial_transactions_etl_dagster_postgresql
+      db_name: postgres_db
+      port: 5432
+
+local_artifact_storage:
+  module: dagster._core.storage.root
+  class: LocalArtifactStorage
+  config:
+    base_dir: /tmp/io_manager_storage
