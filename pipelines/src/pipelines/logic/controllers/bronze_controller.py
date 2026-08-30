@@ -8,7 +8,8 @@ logger = logging.getLogger(__name__)
 class BronzeController:
     """Create bronze raw data from fetched assets in the Landing Zone"""
 
-    def __init__(self, sink: str, ingestors: list[Ingestor]):
+    def __init__(self, source: str, sink: str, ingestors: list[Ingestor]):
+        self.source = source
         self.sink = sink
         self.ingestors = ingestors
 

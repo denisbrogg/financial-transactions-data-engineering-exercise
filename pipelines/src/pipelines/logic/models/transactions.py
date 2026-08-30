@@ -30,6 +30,7 @@ class Transaction(BaseModel):
     fee_currency: str | None = None
     status: str | None = None
     notes: str | None = None
+    is_flagged: bool = False
 
     @field_validator("transaction_date", mode="before")
     @classmethod
@@ -62,3 +63,18 @@ class Transaction(BaseModel):
         if cleaned in {"", "None", "nan"}:
             return None
         return Decimal(cleaned)
+
+    @field_validator("is_flagged", mode="before")
+    @classmethod
+    def parse_flagged(cls, value):
+        if value is None or value == "":
+            return False
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            normalized = value.strip().lower()
+            if normalized in {"true", "yes", "y", "1", "t"}:
+                return True
+            if normalized in {"false", "no", "n", "0", "f"}:
+                return False
+        return bool(value)

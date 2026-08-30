@@ -8,7 +8,8 @@ logger = logging.getLogger(__name__)
 class LandingZoneController:
     """Fetch data from all datasource connectors into the landing zone."""
 
-    def __init__(self, sink: str, connectors: list[Connector]):
+    def __init__(self, source: str, sink: str, connectors: list[Connector]):
+        self.source = source
         self.sink = sink
         self.connectors = connectors
 

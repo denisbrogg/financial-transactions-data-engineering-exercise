@@ -67,6 +67,9 @@ class SilverController:
                 SELECT * FROM bronze."transaction" WHERE false
                 """
             )
+            connection.execute(
+                'ALTER TABLE silver."transaction" ADD COLUMN IF NOT EXISTS is_flagged BOOLEAN'
+            )
 
             if not transactions:
                 return

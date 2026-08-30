@@ -54,8 +54,20 @@ services:
     restart: always
     environment:
       DATA_ROOT: '/data'
+    working_dir: /opt/ui
     volumes:
+      - ../ui:/opt/ui
       - ../data:/data
+    command:
+      - uv
+      - run
+      - streamlit
+      - run
+      - src/ui/main.py
+      - --server.address=0.0.0.0
+      - --server.port=8501
+      - --server.headless=true
+      - --server.enableCORS=false
     networks:
       - financial_transactions_etl_network
     ports:

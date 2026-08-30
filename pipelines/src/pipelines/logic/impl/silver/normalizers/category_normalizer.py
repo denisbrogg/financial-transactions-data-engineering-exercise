@@ -153,4 +153,10 @@ class CategoryNormalizer(Standardizer):
                 except ValueError:
                     pass
 
+            if column == "asset_class":
+                known_asset_classes = {member.value for member in AssetClass}
+                if standardized_record.get(column) not in known_asset_classes:
+                    standardized_record[column] = None
+                    continue
+
             standardized_record[column] = value

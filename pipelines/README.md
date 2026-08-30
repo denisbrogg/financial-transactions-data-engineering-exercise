@@ -52,6 +52,10 @@ dg dev
 
 Open http://localhost:3000 in your browser to see the project.
 
+The pipeline uses a shared DuckDB file, so database-writing assets are assigned to
+the `duckdb` concurrency pool and limited to one active operation. Keep that
+single-writer setting when running Dagster against the shared database.
+
 ## Learn more
 
 To learn more about this template and Dagster in general:
