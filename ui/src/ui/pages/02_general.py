@@ -1,6 +1,7 @@
 import sys
 from pathlib import Path
 
+import plotly.express as px
 import streamlit as st
 
 if __package__ is None or __package__ == "":
@@ -114,10 +115,24 @@ def main():
     )
 
     st.subheader("Overall volume by transaction type")
-    st.pie_chart(
-        transaction_type_totals.set_index("transaction_type")["gross_amount"],
-        width="stretch",
+    fig = px.pie(
+        transaction_type_totals,
+        names="transaction_type",
+        values="gross_amount",
+        hole=0.55,
+        title="Transaction type mix",
     )
+    fig.update_traces(
+        textposition="outside",
+        textinfo="percent+label",
+        hovertemplate="%{label}: %{value:,.0f} CHF (%{percent})",
+    )
+    fig.update_layout(
+        showlegend=False,
+        margin={"l": 0, "r": 0, "t": 40, "b": 0},
+        height=350,
+    )
+    st.plotly_chart(fig, use_container_width=True)
     st.caption(
         "Business question: How much of total portfolio volume is coming from each transaction type?"
     )

@@ -31,19 +31,32 @@ def format_number(value):
     if value is None or (isinstance(value, float) and math.isnan(value)):
         return "0"
     if isinstance(value, int):
-        return f"{value:,}".replace(",", "'")
-    return f"{float(value):,.0f}".replace(",", "'")
+        return f"{value:,.0f}".replace(",", ".")
+    return f"{float(value):,.0f}".replace(",", ".")
 
 
 def format_currency(value, decimals: int = 2):
     if value is None or (isinstance(value, float) and math.isnan(value)):
         return "CHF 0.00"
-    formatted = f"{float(value):,.{decimals}f}".replace(",", "'")
+    formatted = f"{float(value):,.{decimals}f}".replace(",", ".")
     return f"CHF {formatted}"
 
 
 def money(value):
     return format_currency(value)
+
+
+def fmt_chf(value: float, decimals: int = 0) -> str:
+    if value is None or pd.isna(value):
+        return "CHF —"
+    formatted = f"{float(value):,.{decimals}f}".replace(",", ".")
+    return f"CHF {formatted}"
+
+
+def fmt_pct(value: float, decimals: int = 2) -> str:
+    if value is None or pd.isna(value):
+        return "—"
+    return f"{float(value):.{decimals}f}%"
 
 
 def currency_warning() -> None:
