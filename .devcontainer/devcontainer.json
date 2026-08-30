@@ -1,7 +1,11 @@
 {
     "name": "uv-python",
     "build": { "dockerfile": "Dockerfile" },
-    "postCreateCommand": "uv sync --locked --all-groups",
+    "mounts": [
+        "source=${localEnv:HOME}/.ssh/github-devcontainer,target=/root/.ssh/github-devcontainer,type=bind,readonly",
+        "source=${localEnv:HOME}/.ssh/github-devcontainer.pub,target=/root/.ssh/github-devcontainer.pub,type=bind,readonly"
+    ],
+    "postCreateCommand": "mkdir -p /root/.ssh && chmod 700 /root/.ssh && if [ -f \"/root/.ssh/github-devcontainer\" ]; then printf 'Host github.com\\n  HostName github.com\\n  User git\\n  IdentityFile /root/.ssh/github-devcontainer\\n  IdentitiesOnly yes\\n' > /root/.ssh/config; chmod 600 /root/.ssh/config; fi && uv sync --locked --all-groups",
     "customizations": {
         "vscode": {
             "extensions": [
