@@ -13,6 +13,7 @@ members = [
     "pipelines",
     "ui",
     "eda",
+    "scripts",
 ]
 
 [dependency-groups]

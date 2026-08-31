@@ -1,80 +1,10 @@
 version: '3.7'
 
 services:
-  # This service runs the postgres DB used by dagster for run storage, schedule storage,
-  # and event log storage. Depending on the hardware you run this Compose on, you may be able
-  # to reduce the interval and timeout in the healthcheck to speed up your `docker compose up` times.
-  financial_transactions_etl_dagster_postgresql:
-    image: postgres:11
-    container_name: financial_transactions_etl_dagster_postgresql
-    environment:
-      POSTGRES_USER: 'postgres_user'
-      POSTGRES_PASSWORD: 'postgres_password'
-      POSTGRES_DB: 'postgres_db'
-    networks:
-      - financial_transactions_etl_network
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres_user -d postgres_db']
-      interval: 10s
-      timeout: 8s
-      retries: 5
 
-  # This service runs the gRPC server that loads your user code, in both dagster-webserver
-  # and dagster-daemon. By setting DAGSTER_CURRENT_IMAGE to its own image, we tell the
-  # run launcher to use this same image when launching runs in a new container as well.
-  # Multiple containers like this can be deployed separately - each just needs to run on
-  # its own port, and have its own entry in the workspace.yaml file that's loaded by the
-  # webserver.
-  financial_transactions_etl_pipelines_code:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile_pipelines_code
-    container_name: financial_transactions_etl_pipelines_code
-    image: financial_transactions_etl_pipelines_code
-    restart: always
-    environment:
-      DAGSTER_POSTGRES_USER: 'postgres_user'
-      DAGSTER_POSTGRES_PASSWORD: 'postgres_password'
-      DAGSTER_POSTGRES_DB: 'postgres_db'
-      DAGSTER_POSTGRES_HOST: 'financial_transactions_etl_dagster_postgresql'
-      DAGSTER_CURRENT_IMAGE: 'financial_transactions_etl_pipelines_code'
-      DATA_ROOT: '/data'
-    volumes:
-      - ../data:/data
-      - /tmp/io_manager_storage:/tmp/io_manager_storage
-    networks:
-      - financial_transactions_etl_network
-
-  financial_transactions_etl_ui:
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile_ui
-    container_name: financial_transactions_etl_ui
-    image: financial_transactions_etl_ui
-    restart: always
-    environment:
-      DATA_ROOT: '/data'
-    working_dir: /opt/ui
-    volumes:
-      - ../ui:/opt/ui
-      - ../data:/data
-    command:
-      - uv
-      - run
-      - streamlit
-      - run
-      - src/ui/main.py
-      - --server.address=0.0.0.0
-      - --server.port=8501
-      - --server.headless=true
-      - --server.enableCORS=false
-    networks:
-      - financial_transactions_etl_network
-    ports:
-      - '8501:8501'
-    depends_on:
-      financial_transactions_etl_pipelines_code:
-        condition: service_started
+  # # # # # # # # # # # # # # # # # # # # # 
+  # DAGSTER
+  # # # # # # # # # # # # # # # # # # # # #
 
   # This service runs dagster-webserver, which loads your user code from the user code container.
   # Since our instance uses the QueuedRunCoordinator, any runs submitted from the webserver will be put on
@@ -138,6 +68,107 @@ services:
         condition: service_healthy
       financial_transactions_etl_pipelines_code:
         condition: service_started
+
+
+  # This service runs the postgres DB used by dagster for run storage, schedule storage,
+  # and event log storage. Depending on the hardware you run this Compose on, you may be able
+  # to reduce the interval and timeout in the healthcheck to speed up your `docker compose up` times.
+  financial_transactions_etl_dagster_postgresql:
+    image: postgres:11
+    container_name: financial_transactions_etl_dagster_postgresql
+    environment:
+      POSTGRES_USER: 'postgres_user'
+      POSTGRES_PASSWORD: 'postgres_password'
+      POSTGRES_DB: 'postgres_db'
+    networks:
+      - financial_transactions_etl_network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres_user -d postgres_db']
+      interval: 10s
+      timeout: 8s
+      retries: 5
+
+  # This service runs the gRPC server that loads your user code, in both dagster-webserver
+  # and dagster-daemon. By setting DAGSTER_CURRENT_IMAGE to its own image, we tell the
+  # run launcher to use this same image when launching runs in a new container as well.
+  # Multiple containers like this can be deployed separately - each just needs to run on
+  # its own port, and have its own entry in the workspace.yaml file that's loaded by the
+  # webserver.
+  financial_transactions_etl_pipelines_code:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile_pipelines_code
+    container_name: financial_transactions_etl_pipelines_code
+    image: financial_transactions_etl_pipelines_code
+    restart: always
+    environment:
+      DAGSTER_POSTGRES_USER: 'postgres_user'
+      DAGSTER_POSTGRES_PASSWORD: 'postgres_password'
+      DAGSTER_POSTGRES_DB: 'postgres_db'
+      DAGSTER_POSTGRES_HOST: 'financial_transactions_etl_dagster_postgresql'
+      DAGSTER_CURRENT_IMAGE: 'financial_transactions_etl_pipelines_code'
+      DATA_ROOT: '/data'
+    volumes:
+      - ../data:/data
+      - /tmp/io_manager_storage:/tmp/io_manager_storage
+    networks:
+      - financial_transactions_etl_network
+
+  # # # # # # # # # # # # # # # # # # # # # 
+  # DASHBOARD
+  # # # # # # # # # # # # # # # # # # # # #
+
+  financial_transactions_etl_ui:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile_ui
+    container_name: financial_transactions_etl_ui
+    image: financial_transactions_etl_ui
+    restart: always
+    environment:
+      DATA_ROOT: '/data'
+    working_dir: /opt/ui
+    volumes:
+      - ../ui:/opt/ui
+      - ../data:/data
+    command:
+      - uv
+      - run
+      - streamlit
+      - run
+      - src/ui/main.py
+      - --server.address=0.0.0.0
+      - --server.port=8501
+      - --server.headless=true
+      - --server.enableCORS=false
+    networks:
+      - financial_transactions_etl_network
+    ports:
+      - '8501:8501'
+    depends_on:
+      financial_transactions_etl_pipelines_code:
+        condition: service_started
+
+  # # # # # # # # # # # # # # # # # # # # # 
+  # FAKE DATA SOURCES
+  # # # # # # # # # # # # # # # # # # # # #
+
+  financial_transactions_etl_json_server_datasource:
+    image: node:20-alpine
+    container_name: financial_transactions_etl_json_server
+    working_dir: /data
+    command:
+      - sh
+      - -lc
+      - |
+        npm install -g json-server
+        json-server --watch /data/sources/simulated_datasources.json --host 0.0.0.0 --port 3001
+    volumes:
+      - ../data:/data
+    networks:
+      - financial_transactions_etl_network
+    ports:
+      - '3001:3001'
 
 networks:
   financial_transactions_etl_network:

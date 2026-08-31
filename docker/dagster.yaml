@@ -12,8 +12,3 @@ local_artifact_storage:
   class: LocalArtifactStorage
   config:
     base_dir: /tmp/io_manager_storage
-
-concurrency:
-  pools:
-    duckdb:
-      limit: 1
