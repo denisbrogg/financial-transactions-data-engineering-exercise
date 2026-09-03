@@ -39,7 +39,7 @@ class Storage(ABC):
     # ------------------------------------------------------------------
 
     @abstractmethod
-    def write(self, path: str, data: bytes) -> None:
+    def write(self, path: str, data: bytes) -> str:
         """Persist *data* at *path*, creating parent directories as needed."""
 
     def open_write(self, path: str) -> _WritableBuffer:
