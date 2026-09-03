@@ -13,7 +13,7 @@ class LandingZoneController:
         self.connectors = connectors
         self.sink = sink
 
-    def fetch_data(self) -> None:
+    def fetch_data(self) -> list[str]:
         """Fetch data from all connectors and store their raw artifacts."""
         logger.info(
             "Fetching from datasources started.",
@@ -22,9 +22,12 @@ class LandingZoneController:
                 "sink": str(self.sink),
             },
         )
+        artifacts = []
         for connector in self.connectors:
             logger.info(
                 "Fetching data from connector",
                 extra={"connector": connector.__class__.__name__},
             )
-            connector.fetch_data(self.sink)
+            path = connector.fetch_data(self.sink)
+            artifacts.append({"connector": str(connector), "artifact": path})
+        return artifacts

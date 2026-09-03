@@ -1,5 +1,8 @@
 import unittest
+from unittest.mock import patch
 
+from pipelines.defs.assets import api_feed_connector, storage
+from pipelines.logic.impl.connectors.http_api_connector import HTTPConnector
 from pipelines.logic.impl.silver.cleaners.numeric import NumericCleaner
 from pipelines.logic.impl.silver.cleaners.typos import CategoryTypoCleaner
 from pipelines.logic.impl.silver.normalizers.category_normalizer import (
@@ -77,6 +80,44 @@ class CategoryPipelineTests(unittest.TestCase):
         self.assertEqual(cleaned["price_per_unit"], "1234.56")
         self.assertEqual(cleaned["gross_amount"], "39078.22")
         self.assertEqual(cleaned["fee"], "8.03")
+
+    def test_assets_use_a_single_base_url_without_double_scheme(self):
+        self.assertEqual(api_feed_connector.url, "http://localhost:3001/API_FEED")
+
+    def test_storage_uses_project_data_directory(self):
+        self.assertTrue(storage._root.endswith("/data"))
+
+    def test_http_connector_writes_json_as_bytes(self):
+        class DummyResponse:
+            def __init__(self, payload):
+                self._payload = payload
+
+            def raise_for_status(self):
+                return None
+
+            def json(self):
+                return self._payload
+
+        class DummySink:
+            def __init__(self):
+                self.path = None
+                self.data = None
+
+            def write(self, path, data):
+                self.path = path
+                self.data = data
+
+        sink = DummySink()
+        connector = HTTPConnector("http://localhost:3001/API_FEED")
+
+        with patch(
+            "pipelines.logic.impl.connectors.http_api_connector.httpx.get"
+        ) as mocked_get:
+            mocked_get.return_value = DummyResponse([{"id": 1, "account": "A"}])
+            connector.fetch_data(sink)
+
+        self.assertEqual(sink.path, "landing_zone/API_FEED.json")
+        self.assertEqual(sink.data, b'[{"id": 1, "account": "A"}]')
 
 
 if __name__ == "__main__":

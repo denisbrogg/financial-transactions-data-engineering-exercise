@@ -85,13 +85,14 @@ class FSStorage(Storage):
         with self._fs.open(self._full(path), "rb") as f:
             return f.read()
 
-    def write(self, path: str, data: bytes) -> None:
+    def write(self, path: str, data: bytes) -> str:
         full = self._full(path)
         # Create parent directories (local fs needs this; cloud fs ignores it)
         parent = str(PurePosixPath(full).parent)
         self._fs.makedirs(parent, exist_ok=True)
         with self._fs.open(full, "wb") as f:
             f.write(data)
+        return full
 
     def exists(self, path: str) -> bool:
         return self._fs.exists(self._full(path))
